@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SmartRoute TMS</title>
+    <link rel="stylesheet" href="{% static '/css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Welcome to SmartRoute TMS</h1>
+        <p>Select your module below:</p>
+    </header>
+
+    <main>
+        <div class="modules-container">
+            {% for module in modules %}
+            <div class="module-card">
+                <a href="{{ module.url }}">
+                    <img src="{% static module.icon %}" alt="{{ module.name }}">
+                    <h2>{{ module.name }}</h2>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</body>
+</html>

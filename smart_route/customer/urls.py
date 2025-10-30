@@ -1,6 +1,10 @@
 from django.urls import path
 from . import views
 
+app_name = 'customer'
+
 urlpatterns = [
-    path('', views.dashboard, name='customer_dashboard'),  # example page
+    path('register/', views.customer_register, name='register'),
+    path('login/', views.customer_login, name='login'),
+    path('dashboard/', views.customer_dashboard, name='dashboard'),
 ]

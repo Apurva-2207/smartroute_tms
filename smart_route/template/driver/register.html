@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Registration - SmartRoute</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        
+        .registration-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 50px auto;
+            max-width: 700px;
+        }
+        
+        .vehicle-option {
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .vehicle-option:hover {
+            border-color: #4361ee;
+            background-color: #f8f9fa;
+        }
+        
+        .vehicle-option.selected {
+            border-color: #4361ee;
+            background-color: #e7f1ff;
+        }
+        
+        .capacity-badge {
+            background: #4361ee;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="registration-card">
+            <div class="text-center mb-4">
+                <h2 class="text-primary"><i class="fas fa-id-card me-2"></i>Driver Registration</h2>
+                <p class="text-muted">Join as a delivery driver with your vehicle</p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Personal Information -->
+                <h5 class="text-primary mb-3"><i class="fas fa-user me-2"></i>Personal Information</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">First Name *</label>
+                        <input type="text" class="form-control" name="first_name" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Last Name *</label>
+                        <input type="text" class="form-control" name="last_name" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Username *</label>
+                        <input type="text" class="form-control" name="username" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Phone Number *</label>
+                        <input type="tel" class="form-control" name="phone" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Driving License Number *</label>
+                        <input type="text" class="form-control" name="license_number" required>
+                    </div>
+                </div>
+
+                <!-- Vehicle Information -->
+                <h5 class="text-primary mb-3 mt-4"><i class="fas fa-truck me-2"></i>Vehicle Information</h5>
+                
+                <div class="mb-3">
+                    <label class="form-label">Select Your Vehicle Type *</label>
+                    <div class="vehicle-options">
+                        <div class="vehicle-option" onclick="selectVehicle('mini')">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="vehicle_type" value="mini" id="mini" required>
+                                <label class="form-check-label w-100" for="mini">
+                                    <strong>🚗 Mini Vehicle</strong>
+                                    <span class="capacity-badge float-end">30-300 kg</span>
+                                    <p class="text-muted mb-0 mt-1">Small deliveries, local transport</p>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="vehicle-option" onclick="selectVehicle('lcv')">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="vehicle_type" value="lcv" id="lcv">
+                                <label class="form-check-label w-100" for="lcv">
+                                    <strong>🚐 LCV (Light Commercial Vehicle)</strong>
+                                    <span class="capacity-badge float-end">300-1000 kg</span>
+                                    <p class="text-muted mb-0 mt-1">Medium loads, city deliveries</p>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="vehicle-option" onclick="selectVehicle('mcv')">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="vehicle_type" value="mcv" id="mcv">
+                                <label class="form-check-label w-100" for="mcv">
+                                    <strong>🚛 MCV (Medium Commercial Vehicle)</strong>
+                                    <span class="capacity-badge float-end">1000-5000 kg</span>
+                                    <p class="text-muted mb-0 mt-1">Heavy loads, intercity transport</p>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="vehicle-option" onclick="selectVehicle('hcv')">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="vehicle_type" value="hcv" id="hcv">
+                                <label class="form-check-label w-100" for="hcv">
+                                    <strong>🚚 HCV (Heavy Commercial Vehicle)</strong>
+                                    <span class="capacity-badge float-end">5000-16000 kg</span>
+                                    <p class="text-muted mb-0 mt-1">Large shipments, long distance</p>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="vehicle-option" onclick="selectVehicle('trailer')">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="vehicle_type" value="trailer" id="trailer">
+                                <label class="form-check-label w-100" for="trailer">
+                                    <strong>🚛 Trailer</strong>
+                                    <span class="capacity-badge float-end">16000-35000 kg</span>
+                                    <p class="text-muted mb-0 mt-1">Maximum capacity, industrial transport</p>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label class="form-label">Vehicle Registration Number *</label>
+                        <input type="text" class="form-control" name="vehicle_number" placeholder="e.g., DL01AB1234" required>
+                    </div>
+                </div>
+
+                <!-- Security Information -->
+                <h5 class="text-primary mb-3 mt-4"><i class="fas fa-lock me-2"></i>Security Information</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Password *</label>
+                        <input type="password" class="form-control" name="password1" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Confirm Password *</label>
+                        <input type="password" class="form-control" name="password2" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" required>
+                        <label class="form-check-label">
+                            I agree to the Terms and Conditions and confirm that I have a valid driving license
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 py-3">
+                    <i class="fas fa-user-plus me-2"></i>Register as Driver
+                </button>
+
+                <div class="text-center mt-3">
+                    <p>Already have an account? <a href="{% url 'driver:login' %}">Login here</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function selectVehicle(vehicleType) {
+            // Remove selected class from all options
+            document.querySelectorAll('.vehicle-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            event.currentTarget.classList.add('selected');
+            
+            // Check the radio button
+            document.getElementById(vehicleType).checked = true;
+        }
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

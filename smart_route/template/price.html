@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartRoute - Price Calculator</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --success-color: #28a745;
+            --dark-color: #1e1e2c;
+            --light-color: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .calculator-container {
+            max-width: 800px;
+            margin: 50px auto;
+        }
+        
+        .calculator-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: var(--dark-color);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 12px;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.15);
+        }
+        
+        .weight-input-container {
+            position: relative;
+        }
+        
+        .weight-input-container .input-group-text {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 12px 0 0 12px;
+        }
+        
+        .weight-input-container .form-control {
+            border-radius: 0 12px 12px 0;
+        }
+        
+        .weight-hint {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 8px;
+        }
+        
+        .calculate-btn {
+            background: var(--primary-color);
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+        }
+        
+        .result-box {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            display: none;
+            animation: fadeIn 0.6s ease;
+        }
+        
+        .result-box.show {
+            display: block;
+        }
+        
+        .price-display {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .price-display h2 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .delivery-info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .breakdown-box {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .breakdown-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .breakdown-item.total {
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-top: 2px solid rgba(255, 255, 255, 0.5);
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .btn-book {
+            background: white;
+            color: var(--success-color);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+        }
+        
+        .btn-reset {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .calculator-card {
+                padding: 30px 20px;
+            }
+            
+            .price-display h2 {
+                font-size: 2.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator-card">
+            <!-- Header -->
+            <div class="header">
+                <h1><i class="fas fa-calculator me-2"></i>Shipping Cost Calculator</h1>
+                <p>Calculate your delivery cost in seconds</p>
+            </div>
+            
+            <!-- Calculator Form -->
+            <form id="priceCalculator">
+                <div class="row">
+                    <!-- From Location -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-map-marker-alt me-2"></i>From Location
+                            </label>
+                            <input type="text" class="form-control" id="fromLocation" placeholder="Enter pickup location" value="Delhi" required>
+                        </div>
+                    </div>
+                    
+                    <!-- To Location -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-flag-checkered me-2"></i>To Location
+                            </label>
+                            <input type="text" class="form-control" id="toLocation" placeholder="Enter delivery location" value="Mumbai" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Weight Input -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-weight-hanging me-2"></i>Parcel Weight (kg)
+                    </label>
+                    <div class="weight-input-container">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-weight-hanging"></i>
+                            </span>
+                            <input type="number" class="form-control" id="parcelWeight" min="30" max="35000" value="30" step="1" required>
+                        </div>
+                    </div>
+                    <div class="weight-hint">
+                        <i class="fas fa-info-circle me-1"></i> Minimum weight: 30 kg
+                    </div>
+                </div>
+                
+                <!-- Vehicle Type -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-truck me-2"></i>Vehicle Type
+                    </label>
+                    <select class="form-select" id="vehicleType" required>
+                        <option value="mini">Mini Vehicle (30-300 kg)</option>
+                        <option value="lcv">LCV (300-1000 kg)</option>
+                        <option value="mcv" selected>MCV (1000-5000 kg)</option>
+                        <option value="hcv">HCV (5000-16000 kg)</option>
+                        <option value="trailer">Trailer (16000-35000 kg)</option>
+                    </select>
+                </div>
+                
+                <!-- Calculate Button -->
+                <button type="button" class="btn btn-primary calculate-btn" onclick="calculatePrice()">
+                    <i class="fas fa-calculator me-2"></i>Calculate Shipping Cost
+                </button>
+            </form>
+            
+            <!-- Result Box -->
+            <div id="result" class="result-box">
+                <div class="price-display">
+                    <h2 id="calculatedPrice">₹0.00</h2>
+                    <p>Total Shipping Cost</p>
+                </div>
+                
+                <div class="delivery-info">
+                    <div class="row">
+                        <div class="col-6">
+                            <p><i class="fas fa-route me-2"></i>Distance</p>
+                            <h5 id="distanceInfo">250 km</h5>
+                        </div>
+                        <div class="col-6">
+                            <p><i class="fas fa-clock me-2"></i>Delivery Time</p>
+                            <h5 id="deliveryTime">2-3 days</h5>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="breakdown-box">
+                    <h5 class="mb-3">Price Breakdown</h5>
+                    <div class="breakdown-item">
+                        <span>Base Fare</span>
+                        <span id="baseFare">₹0.00</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Distance Charge</span>
+                        <span id="distanceCharge">₹0.00</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Weight Charge</span>
+                        <span id="weightCharge">₹0.00</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>GST (18%)</span>
+                        <span id="gstAmount">₹0.00</span>
+                    </div>
+                    <div class="breakdown-item total">
+                        <span>Total</span>
+                        <span id="totalAmount">₹0.00</span>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-book" onclick="bookDelivery()">
+                        <i class="fas fa-shopping-cart me-2"></i>Book Delivery
+                    </button>
+                    <button class="btn btn-reset" onclick="resetCalculator()">
+                        <i class="fas fa-redo me-2"></i>Calculate Again
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Update vehicle type based on weight
+        function updateVehicleType() {
+            const weight = parseInt(document.getElementById('parcelWeight').value);
+            const vehicleType = document.getElementById('vehicleType');
+            
+            if (weight >= 30 && weight <= 300) {
+                vehicleType.value = 'mini';
+            } else if (weight > 300 && weight <= 1000) {
+                vehicleType.value = 'lcv';
+            } else if (weight > 1000 && weight <= 5000) {
+                vehicleType.value = 'mcv';
+            } else if (weight > 5000 && weight <= 16000) {
+                vehicleType.value = 'hcv';
+            } else if (weight > 16000 && weight <= 35000) {
+                vehicleType.value = 'trailer';
+            }
+        }
+        
+        // Price calculation function
+        function calculatePrice() {
+            const fromLocation = document.getElementById('fromLocation').value;
+            const toLocation = document.getElementById('toLocation').value;
+            const weight = parseInt(document.getElementById('parcelWeight').value);
+            const vehicleType = document.getElementById('vehicleType').value;
+            
+            if (!fromLocation || !toLocation) {
+                alert('Please enter both pickup and delivery locations');
+                return;
+            }
+            
+            if (weight < 30) {
+                alert('Minimum weight is 30 kg');
+                return;
+            }
+            
+            // Calculate distance (using a consistent method)
+            const distance = calculateDistance(fromLocation, toLocation);
+            
+            // Calculate price based on weight, distance, and vehicle type
+            const priceDetails = calculateShippingPrice(weight, distance, vehicleType);
+            
+            // Calculate delivery time
+            const deliveryTime = calculateDeliveryTime(distance, vehicleType);
+            
+            // Display results
+            document.getElementById('calculatedPrice').textContent = '₹' + priceDetails.total.toFixed(2);
+            document.getElementById('distanceInfo').textContent = distance + ' km';
+            document.getElementById('deliveryTime').textContent = deliveryTime;
+            
+            // Display price breakdown
+            document.getElementById('baseFare').textContent = '₹' + priceDetails.basePrice.toFixed(2);
+            document.getElementById('distanceCharge').textContent = '₹' + priceDetails.distancePrice.toFixed(2);
+            document.getElementById('weightCharge').textContent = '₹' + priceDetails.weightPrice.toFixed(2);
+            document.getElementById('gstAmount').textContent = '₹' + priceDetails.gst.toFixed(2);
+            document.getElementById('totalAmount').textContent = '₹' + priceDetails.total.toFixed(2);
+            
+            // Show result box
+            document.getElementById('result').classList.add('show');
+        }
+        
+        // Calculate distance between locations (consistent method)
+        function calculateDistance(from, to) {
+            // Predefined distances for common routes
+            const distances = {
+                'delhi-mumbai': 1412,
+                'mumbai-delhi': 1412,
+                'delhi-bangalore': 2174,
+                'bangalore-delhi': 2174,
+                'mumbai-bangalore': 984,
+                'bangalore-mumbai': 984,
+                'delhi-chennai': 2180,
+                'chennai-delhi': 2180,
+                'mumbai-chennai': 1336,
+                'chennai-mumbai': 1336,
+                'bangalore-chennai': 347,
+                'chennai-bangalore': 347,
+                'delhi-kolkata': 1532,
+                'kolkata-delhi': 1532,
+                'mumbai-kolkata': 2048,
+                'kolkata-mumbai': 2048
+            };
+            
+            const key = from.toLowerCase() + '-' + to.toLowerCase();
+            
+            // If we have a predefined distance, use it
+            if (distances[key]) {
+                return distances[key];
+            }
+            
+            // For unknown routes, use a consistent calculation based on city names
+            // This ensures the same distance is always returned for the same locations
+            let hash = 0;
+            for (let i = 0; i < key.length; i++) {
+                hash = ((hash << 5) - hash) + key.charCodeAt(i);
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            
+            // Return a distance between 100 and 2500 km based on the hash
+            return Math.abs(hash % 2400) + 100;
+        }
+        
+        // Calculate shipping price with breakdown
+        function calculateShippingPrice(weight, distance, vehicleType) {
+            const rates = {
+                mini: { base: 500, perKm: 15, perKg: 8 },
+                lcv: { base: 800, perKm: 20, perKg: 6 },
+                mcv: { base: 1200, perKm: 25, perKg: 5 },
+                hcv: { base: 2000, perKm: 30, perKg: 4 },
+                trailer: { base: 3000, perKm: 35, perKg: 3 }
+            };
+            
+            const vehicle = rates[vehicleType];
+            
+            // Calculate price components
+            const basePrice = vehicle.base;
+            const distancePrice = distance * vehicle.perKm;
+            const weightPrice = weight * vehicle.perKg;
+            
+            // Calculate total before GST
+            const subtotal = basePrice + distancePrice + weightPrice;
+            
+            // Add GST (18%)
+            const gst = subtotal * 0.18;
+            
+            // Final total
+            const total = subtotal + gst;
+            
+            return {
+                basePrice,
+                distancePrice,
+                weightPrice,
+                gst,
+                total
+            };
+        }
+        
+        // Calculate delivery time
+        function calculateDeliveryTime(distance, vehicleType) {
+            let baseDays = Math.ceil(distance / 400); // Base 400km per day
+            
+            // Adjust based on vehicle type
+            if (vehicleType === 'mini') baseDays += 0.5;
+            if (vehicleType === 'trailer') baseDays += 1;
+            
+            const minDays = Math.max(1, Math.floor(baseDays));
+            const maxDays = Math.ceil(baseDays + 1);
+            
+            return `${minDays}-${maxDays} days`;
+        }
+        
+        // Book delivery function
+        function bookDelivery() {
+            const fromLocation = document.getElementById('fromLocation').value;
+            const toLocation = document.getElementById('toLocation').value;
+            const weight = document.getElementById('parcelWeight').value;
+            const vehicleType = document.getElementById('vehicleType').value;
+            const price = document.getElementById('calculatedPrice').textContent;
+            
+            alert(`Booking Confirmation:\n\nFrom: ${fromLocation}\nTo: ${toLocation}\nWeight: ${weight} kg\nVehicle: ${vehicleType}\nTotal Cost: ${price}\n\nThank you for choosing SmartRoute!`);
+        }
+        
+        // Reset calculator
+        function resetCalculator() {
+            document.getElementById('fromLocation').value = 'Delhi';
+            document.getElementById('toLocation').value = 'Mumbai';
+            document.getElementById('parcelWeight').value = 30;
+            document.getElementById('vehicleType').value = 'mini';
+            document.getElementById('result').classList.remove('show');
+        }
+        
+        // Initialize the calculator
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default values
+            resetCalculator();
+            
+            // Update vehicle type when weight changes
+            document.getElementById('parcelWeight').addEventListener('input', updateVehicleType);
+        });
+    </script>
+</body>
+</html>

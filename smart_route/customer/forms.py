@@ -4,6 +4,11 @@ from django.contrib.auth.models import User
 from .models import UserProfile, CustomerProfile
 from django.core.validators import RegexValidator
 
+
+from django.contrib.auth.models import User
+from .models import *
+
+
 class CustomUserCreationForm(UserCreationForm):
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Enter a valid phone number")
     phone_number = forms.CharField(validators=[phone_regex], max_length=17, widget=forms.TextInput(attrs={
@@ -80,4 +85,38 @@ class UserProfileForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'PIN Code'
             }),
+        }
+        
+        
+        
+        
+        
+        
+        
+class UserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+
+class CustomerProfileForm(forms.ModelForm):
+    class Meta:
+        model = CustomerProfile
+        fields = ['company_name', 'phone_number', 'address', 'city', 'state', 'zip_code']
+
+class ShipmentForm(forms.ModelForm):
+    class Meta:
+        model = Shipment
+        fields = ['pickup_address', 'delivery_address', 'goods_type', 'weight', 'vehicle_type', 'estimated_delivery']
+        widgets = {
+            'estimated_delivery': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'pickup_address': forms.Textarea(attrs={'rows': 3}),
+            'delivery_address': forms.Textarea(attrs={'rows': 3}),
+        }
+
+class SupportTicketForm(forms.ModelForm):
+    class Meta:
+        model = SupportTicket
+        fields = ['subject', 'description', 'priority']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4}),
         }

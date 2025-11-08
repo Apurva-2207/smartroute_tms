@@ -16,16 +16,23 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
-from django.urls import include
-from smart_route import views
+from django.urls import path, include
+from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import login_required
 from . import views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),  # Homepage
     path('customer/', include('customer.urls')),
     path('driver/', include('driver.urls')),
     path('transporter/', include('transporter.urls')),
+    # Settings shortcut (redirects to appropriate dashboard)
+    path('settings/', login_required(views.settings_view), name='settings'),
+    # Include Django's built-in auth views (login/logout/password reset)
+    path('accounts/', include('django.contrib.auth.urls')),
+    # Explicit logout that redirects to home
+    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
 ]
 
 # Serve media files in development

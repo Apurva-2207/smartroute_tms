@@ -1,0 +1,482 @@
+{% extends 'driver/base.html' %}
+{% load static %}
+
+{% block title %}Settings - SmartRoute{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-nav {
+        border-right: 1px solid #dee2e6;
+        padding-right: 20px;
+    }
+    
+    .settings-nav .nav-link {
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin-bottom: 5px;
+        color: #495057;
+        transition: all 0.3s ease;
+    }
+    
+    .settings-nav .nav-link:hover,
+    .settings-nav .nav-link.active {
+        background-color: #e7f1ff;
+        color: var(--primary);
+    }
+    
+    .settings-section {
+        display: none;
+    }
+    
+    .settings-section.active {
+        display: block;
+    }
+    
+    .profile-image-container {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .profile-image-upload {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: var(--primary);
+        color: white;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 2px solid white;
+    }
+    
+    .form-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border-left: 4px solid var(--primary);
+    }
+    
+    .security-item {
+        padding: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        background: white;
+    }
+    
+    .notification-item {
+        padding: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4 class="text-primary"><i class="fas fa-route me-2"></i>SmartRoute</h4>
+            <p class="text-muted">Driver Portal</p>
+        </div>
+        
+        <div class="driver-info">
+            {% if driver.profile_image %}
+                <img src="{{ driver.profile_image.url }}" alt="Profile" class="profile-image">
+            {% else %}
+                <img src="https://via.placeholder.com/120/4361ee/ffffff?text=DR" alt="Profile" class="profile-image">
+            {% endif %}
+            <h5>{{ driver.user.first_name }} {{ driver.user.last_name }}</h5>
+            <p class="text-muted">@{{ driver.user.username }}</p>
+            <span class="badge bg-success">Active Driver</span>
+        </div>
+        
+        <nav class="nav flex-column">
+            <a class="nav-link" href="{% url 'driver:dashboard' %}">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a class="nav-link" href="{% url 'driver:my_deliveries' %}">
+                <i class="fas fa-shipping-fast"></i> My Deliveries
+            </a>
+            <a class="nav-link" href="{% url 'driver:vehicle_info' %}">
+                <i class="fas fa-car"></i> Vehicle Info
+            </a>
+            <a class="nav-link" href="{% url 'driver:earnings' %}">
+                <i class="fas fa-chart-line"></i> Earnings
+            </a>
+            <a class="nav-link active" href="{% url 'driver:settings' %}">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+            <a class="nav-link" href="{% url 'driver:logout' %}">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Page Header -->
+        <div class="content-card">
+            <h3 class="text-primary"><i class="fas fa-cog me-2"></i>Settings</h3>
+            <p class="text-muted">Manage your account settings and preferences</p>
+        </div>
+
+        <div class="row">
+            <!-- Settings Navigation -->
+            <div class="col-md-3">
+                <div class="content-card settings-nav">
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="#" onclick="showSection('profile')">
+                            <i class="fas fa-user me-2"></i> Profile Settings
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('security')">
+                            <i class="fas fa-lock me-2"></i> Security
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('notifications')">
+                            <i class="fas fa-bell me-2"></i> Notifications
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('preferences')">
+                            <i class="fas fa-sliders-h me-2"></i> Preferences
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('privacy')">
+                            <i class="fas fa-shield-alt me-2"></i> Privacy
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Settings Content -->
+            <div class="col-md-9">
+                <!-- Profile Settings -->
+                <div class="content-card settings-section active" id="profile-section">
+                    <h5 class="text-primary mb-4"><i class="fas fa-user me-2"></i>Profile Settings</h5>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="update_profile" value="true">
+                        
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-4">
+                                <div class="profile-image-container">
+                                    {% if driver.profile_image %}
+                                        <img src="{{ driver.profile_image.url }}" alt="Profile" class="profile-image" id="profile-image-preview">
+                                    {% else %}
+                                        <img src="https://via.placeholder.com/150/4361ee/ffffff?text=DR" alt="Profile" class="profile-image" id="profile-image-preview">
+                                    {% endif %}
+                                    <div class="profile-image-upload" onclick="document.getElementById('profile_image').click()">
+                                        <i class="fas fa-camera"></i>
+                                    </div>
+                                </div>
+                                <input type="file" name="profile_image" id="profile_image" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                                <small class="text-muted">Click camera icon to update profile picture</small>
+                            </div>
+                            
+                            <div class="col-md-8">
+                                <div class="form-section">
+                                    <h6 class="text-primary mb-3">Personal Information</h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">First Name *</label>
+                                            <input type="text" class="form-control" name="first_name" value="{{ driver.user.first_name }}" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Last Name *</label>
+                                            <input type="text" class="form-control" name="last_name" value="{{ driver.user.last_name }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Username *</label>
+                                            <input type="text" class="form-control" value="{{ driver.user.username }}" readonly>
+                                            <small class="text-muted">Username cannot be changed</small>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Email *</label>
+                                            <input type="email" class="form-control" name="email" value="{{ driver.user.email }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Phone Number *</label>
+                                        <input type="tel" class="form-control" name="phone" value="{{ driver.phone }}" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-section">
+                                    <h6 class="text-primary mb-3">Address Information</h6>
+                                    <div class="mb-3">
+                                        <label class="form-label">Address</label>
+                                        <textarea class="form-control" name="address" rows="3">{{ driver.address }}</textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">City</label>
+                                            <input type="text" class="form-control" name="city" value="{{ driver.city }}">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">State</label>
+                                            <input type="text" class="form-control" name="state" value="{{ driver.state }}">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Pincode</label>
+                                            <input type="text" class="form-control" name="pincode" value="{{ driver.pincode }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i> Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Security Settings -->
+                <div class="content-card settings-section" id="security-section">
+                    <h5 class="text-primary mb-4"><i class="fas fa-lock me-2"></i>Security Settings</h5>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="change_password" value="true">
+                        
+                        <div class="security-item">
+                            <h6 class="text-primary mb-3">Change Password</h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Current Password *</label>
+                                    <input type="password" class="form-control" name="current_password" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">New Password *</label>
+                                    <input type="password" class="form-control" name="new_password1" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Confirm New Password *</label>
+                                    <input type="password" class="form-control" name="new_password2" required>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-key me-2"></i> Update Password
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="security-item">
+                        <h6 class="text-primary mb-3">Two-Factor Authentication</h6>
+                        <p class="text-muted">Add an extra layer of security to your account</p>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="2faSwitch">
+                            <label class="form-check-label" for="2faSwitch">Enable Two-Factor Authentication</label>
+                        </div>
+                    </div>
+                    
+                    <div class="security-item">
+                        <h6 class="text-primary mb-3">Login Activity</h6>
+                        <p class="text-muted">Recent login activity on your account</p>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Last login: {% now "M d, Y H:i" %} from {{ request.META.REMOTE_ADDR }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notification Settings -->
+                <div class="content-card settings-section" id="notifications-section">
+                    <h5 class="text-primary mb-4"><i class="fas fa-bell me-2"></i>Notification Settings</h5>
+                    
+                    <div class="notification-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">New Delivery Assignments</h6>
+                                <p class="mb-0 text-muted">Get notified when new deliveries are assigned to you</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="notification-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Delivery Updates</h6>
+                                <p class="mb-0 text-muted">Receive updates about delivery status changes</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="notification-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Payment Notifications</h6>
+                                <p class="mb-0 text-muted">Get notified about payments and earnings</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="notification-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Promotional Offers</h6>
+                                <p class="mb-0 text-muted">Receive offers and promotions from SmartRoute</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-end mt-3">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i> Save Notification Settings
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Preferences -->
+                <div class="content-card settings-section" id="preferences-section">
+                    <h5 class="text-primary mb-4"><i class="fas fa-sliders-h me-2"></i>Preferences</h5>
+                    
+                    <div class="form-section">
+                        <h6 class="text-primary mb-3">Working Preferences</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Preferred Working Hours</label>
+                                <select class="form-select">
+                                    <option>Flexible</option>
+                                    <option>Morning (6 AM - 2 PM)</option>
+                                    <option>Afternoon (12 PM - 8 PM)</option>
+                                    <option>Evening (4 PM - 12 AM)</option>
+                                    <option>Night (10 PM - 6 AM)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Maximum Daily Deliveries</label>
+                                <input type="number" class="form-control" value="10" min="1" max="20">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h6 class="text-primary mb-3">Delivery Preferences</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Preferred Delivery Areas</label>
+                            <textarea class="form-control" rows="3" placeholder="Enter areas where you prefer to deliver..."></textarea>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" checked>
+                            <label class="form-check-label">Accept long-distance deliveries</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" checked>
+                            <label class="form-check-label">Accept heavy package deliveries</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox">
+                            <label class="form-check-label">Accept express delivery requests</label>
+                        </div>
+                    </div>
+                    
+                    <div class="text-end">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i> Save Preferences
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Privacy Settings -->
+                <div class="content-card settings-section" id="privacy-section">
+                    <h5 class="text-primary mb-4"><i class="fas fa-shield-alt me-2"></i>Privacy Settings</h5>
+                    
+                    <div class="form-section">
+                        <h6 class="text-primary mb-3">Data Privacy</h6>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" checked>
+                            <label class="form-check-label">Allow location tracking during active deliveries</label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox">
+                            <label class="form-check-label">Share my performance data for service improvement</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" checked>
+                            <label class="form-check-label">Allow customer ratings and feedback</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h6 class="text-primary mb-3">Contact Privacy</h6>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" checked>
+                            <label class="form-check-label">Show my name to customers</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox">
+                            <label class="form-check-label">Allow customers to contact me directly</label>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Important:</strong> Some privacy settings may affect your ability to receive certain types of delivery assignments.
+                    </div>
+                    
+                    <div class="text-end">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i> Save Privacy Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showSection(sectionName) {
+        // Hide all sections
+        document.querySelectorAll('.settings-section').forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Remove active class from all nav links
+        document.querySelectorAll('.settings-nav .nav-link').forEach(link => {
+            link.classList.remove('active');
+        });
+        
+        // Show selected section and activate nav link
+        document.getElementById(sectionName + '-section').classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+    
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profile-image-preview').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %}

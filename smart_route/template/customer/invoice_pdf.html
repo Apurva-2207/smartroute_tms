@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .invoice-table th, .invoice-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .invoice-table th {
+            background-color: #f8fafc;
+        }
+        .total-section {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .footer {
+            margin-top: 50px;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            font-size: 10px;
+        }
+        .signature {
+            margin-top: 50px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-name">SmartRoute Logistics</div>
+        <div>123 Business Park, Mumbai, Maharashtra - 400001</div>
+        <div>Phone: +91-9876543210 | Email: accounts@smartroute.com</div>
+        <div>GSTIN: 27AABCU9603R1ZM | PAN: AABCU9603R</div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+        <div>
+            <strong>Bill To:</strong><br>
+            {{ customer.user_profile.user.get_full_name }}<br>
+            {{ customer.user_profile.company_name }}<br>
+            {{ customer.user_profile.address_line_1 }}<br>
+            {% if customer.user_profile.address_line_2 %}{{ customer.user_profile.address_line_2 }}<br>{% endif %}
+            {{ customer.user_profile.city }}, {{ customer.user_profile.state }} - {{ customer.user_profile.pincode }}<br>
+            Phone: {{ customer.user_profile.phone_number }}
+        </div>
+        <div style="text-align: right;">
+            <strong>Invoice No:</strong> {{ payment.invoice_number }}<br>
+            <strong>Date:</strong> {{ today|date:"d/m/Y" }}<br>
+            <strong>Due Date:</strong> {{ invoice.due_date|date:"d/m/Y" }}<br>
+            <strong>Tracking ID:</strong> {{ shipment.tracking_id }}
+        </div>
+    </div>
+
+    <table class="invoice-table">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Rate (₹)</th>
+                <th>Amount (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Transportation charges for {{ shipment.goods_type }}<br>
+                    <small>From: {{ shipment.pickup_address|truncatewords:5 }}</small><br>
+                    <small>To: {{ shipment.delivery_address|truncatewords:5 }}</small>
+                </td>
+                <td>1</td>
+                <td>{{ payment.amount }}</td>
+                <td>{{ payment.amount }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" style="text-align: right;"><strong>Subtotal:</strong></td>
+                <td><strong>₹{{ payment.amount }}</strong></td>
+            </tr>
+            <tr>
+                <td colspan="3" style="text-align: right;">SGST (9%):</td>
+                <td>₹{{ payment.sgst }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" style="text-align: right;">CGST (9%):</td>
+                <td>₹{{ payment.cgst }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" style="text-align: right;"><strong>Total Amount:</strong></td>
+                <td><strong>₹{{ payment.total_amount }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="total-section">
+        <h3>Total Due: ₹{{ payment.total_amount }}</h3>
+        <p><strong>Amount in Words:</strong> {{ payment.total_amount|floatformat:2 }} Rupees Only</p>
+    </div>
+
+    {% if invoice.notes %}
+    <div style="margin-top: 20px;">
+        <strong>Notes:</strong><br>
+        {{ invoice.notes }}
+    </div>
+    {% endif %}
+
+    {% if invoice.terms_and_conditions %}
+    <div style="margin-top: 20px;">
+        <strong>Terms & Conditions:</strong><br>
+        {{ invoice.terms_and_conditions }}
+    </div>
+    {% endif %}
+
+    <div class="signature">
+        <p>For SmartRoute Logistics</p>
+        <br><br>
+        <p>_________________________</p>
+        <p>Authorized Signatory</p>
+    </div>
+
+    <div class="footer">
+        <center>
+            This is a computer-generated invoice and does not require a physical signature.<br>
+            If you have any questions concerning this invoice, contact our accounts department.
+        </center>
+    </div>
+</body>
+</html>

@@ -1,0 +1,345 @@
+{% extends 'driver/base.html' %}
+{% load static %}
+
+{% block title %}Vehicle Information - SmartRoute{% endblock %}
+
+{% block extra_css %}
+<style>
+    .vehicle-card {
+        text-align: center;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .vehicle-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .info-item {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 4px solid var(--primary);
+    }
+    
+    .info-item h6 {
+        color: var(--primary);
+        margin-bottom: 10px;
+    }
+    
+    .document-card {
+        border: 2px dashed #dee2e6;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .document-card:hover {
+        border-color: var(--primary);
+        background: #f8f9fa;
+    }
+    
+    .maintenance-item {
+        padding: 15px;
+        border-left: 4px solid #ffc107;
+        background: #fffbf0;
+        margin-bottom: 15px;
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .maintenance-item.completed {
+        border-left-color: #28a745;
+        background: #f0fff4;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4 class="text-primary"><i class="fas fa-route me-2"></i>SmartRoute</h4>
+            <p class="text-muted">Driver Portal</p>
+        </div>
+        
+        <div class="driver-info">
+            {% if driver.profile_image %}
+                <img src="{{ driver.profile_image.url }}" alt="Profile" class="profile-image">
+            {% else %}
+                <img src="https://via.placeholder.com/120/4361ee/ffffff?text=DR" alt="Profile" class="profile-image">
+            {% endif %}
+            <h5>{{ driver.user.first_name }} {{ driver.user.last_name }}</h5>
+            <p class="text-muted">@{{ driver.user.username }}</p>
+            <span class="badge bg-success">Active Driver</span>
+        </div>
+        
+        <nav class="nav flex-column">
+            <a class="nav-link" href="{% url 'driver:dashboard' %}">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a class="nav-link" href="{% url 'driver:my_deliveries' %}">
+                <i class="fas fa-shipping-fast"></i> My Deliveries
+            </a>
+            <a class="nav-link active" href="{% url 'driver:vehicle_info' %}">
+                <i class="fas fa-car"></i> Vehicle Info
+            </a>
+            <a class="nav-link" href="{% url 'driver:earnings' %}">
+                <i class="fas fa-chart-line"></i> Earnings
+            </a>
+            <a class="nav-link" href="{% url 'driver:settings' %}">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+            <a class="nav-link" href="{% url 'driver:logout' %}">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Page Header -->
+        <div class="content-card">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h3 class="text-primary"><i class="fas fa-car me-2"></i>Vehicle Information</h3>
+                    <p class="text-muted">Manage your vehicle details and documents</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    {% if driver.has_own_vehicle or driver.assigned_vehicle %}
+                        <span class="badge bg-success fs-6 p-2">
+                            <i class="fas fa-check me-1"></i> Vehicle Active
+                        </span>
+                    {% else %}
+                        <span class="badge bg-warning fs-6 p-2">
+                            <i class="fas fa-clock me-1"></i> Pending Assignment
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if driver.has_own_vehicle or driver.assigned_vehicle %}
+            <!-- Vehicle Overview -->
+            <div class="vehicle-card">
+                <div class="vehicle-icon">
+                    {% if driver.vehicle_type == 'mini' %}🚗
+                    {% elif driver.vehicle_type == 'lcv' %}🚐
+                    {% elif driver.vehicle_type == 'mcv' %}🚛
+                    {% elif driver.vehicle_type == 'hcv' %}🚚
+                    {% elif driver.vehicle_type == 'trailer' %}🚛
+                    {% else %}🚗{% endif %}
+                </div>
+                <h2>
+                    {% if driver.has_own_vehicle %}
+                        {{ driver.get_vehicle_type_display }}
+                    {% else %}
+                        {{ driver.assigned_vehicle.get_vehicle_type_display }}
+                    {% endif %}
+                </h2>
+                <p class="mb-0">
+                    {% if driver.has_own_vehicle %}
+                        {{ driver.vehicle_number }}
+                    {% else %}
+                        {{ driver.assigned_vehicle.registration_number }}
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- Vehicle Details -->
+            <div class="content-card">
+                <h5 class="text-primary mb-4"><i class="fas fa-info-circle me-2"></i>Vehicle Details</h5>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <h6><i class="fas fa-id-card me-2"></i>Registration</h6>
+                        <p class="mb-0">
+                            {% if driver.has_own_vehicle %}
+                                {{ driver.vehicle_number }}
+                            {% else %}
+                                {{ driver.assigned_vehicle.registration_number }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="info-item">
+                        <h6><i class="fas fa-truck-loading me-2"></i>Vehicle Type</h6>
+                        <p class="mb-0">
+                            {% if driver.has_own_vehicle %}
+                                {{ driver.get_vehicle_type_display }}
+                            {% else %}
+                                {{ driver.assigned_vehicle.get_vehicle_type_display }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="info-item">
+                        <h6><i class="fas fa-weight me-2"></i>Capacity</h6>
+                        <p class="mb-0">
+                            {% if driver.has_own_vehicle %}
+                                {% if driver.vehicle_type == 'mini' %}30-300 kg
+                                {% elif driver.vehicle_type == 'lcv' %}300-1000 kg
+                                {% elif driver.vehicle_type == 'mcv' %}1000-5000 kg
+                                {% elif driver.vehicle_type == 'hcv' %}5000-16000 kg
+                                {% elif driver.vehicle_type == 'trailer' %}16000-35000 kg
+                                {% endif %}
+                            {% else %}
+                                {{ driver.assigned_vehicle.capacity }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="info-item">
+                        <h6><i class="fas fa-map-marker-alt me-2"></i>Current Location</h6>
+                        <p class="mb-0">
+                            {% if driver.assigned_vehicle and driver.assigned_vehicle.current_location %}
+                                {{ driver.assigned_vehicle.current_location }}
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="info-item">
+                        <h6><i class="fas fa-shield-alt me-2"></i>Insurance Status</h6>
+                        <p class="mb-0">
+                            {% if driver.assigned_vehicle and driver.assigned_vehicle.insurance_expiry %}
+                                Expires: {{ driver.assigned_vehicle.insurance_expiry|date:"M d, Y" }}
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="info-item">
+                        <h6><i class="fas fa-tag me-2"></i>Ownership</h6>
+                        <p class="mb-0">
+                            {% if driver.has_own_vehicle %}
+                                <span class="badge bg-success">Personal Vehicle</span>
+                            {% else %}
+                                <span class="badge bg-info">Company Vehicle</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Maintenance Schedule -->
+            <div class="content-card">
+                <h5 class="text-primary mb-4"><i class="fas fa-tools me-2"></i>Maintenance Schedule</h5>
+                
+                <div class="maintenance-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">Oil Change</h6>
+                            <p class="mb-0 text-muted">Next due: 15 days</p>
+                        </div>
+                        <span class="badge bg-warning">Pending</span>
+                    </div>
+                </div>
+                
+                <div class="maintenance-item completed">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">Tire Rotation</h6>
+                            <p class="mb-0 text-muted">Completed: 2 weeks ago</p>
+                        </div>
+                        <span class="badge bg-success">Completed</span>
+                    </div>
+                </div>
+                
+                <div class="maintenance-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">Brake Inspection</h6>
+                            <p class="mb-0 text-muted">Next due: 1 month</p>
+                        </div>
+                        <span class="badge bg-warning">Pending</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vehicle Documents -->
+            <div class="content-card">
+                <h5 class="text-primary mb-4"><i class="fas fa-file-alt me-2"></i>Vehicle Documents</h5>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="document-card">
+                            <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                            <h6>Registration Certificate</h6>
+                            <p class="text-muted small">Upload RC document</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="document-card">
+                            <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                            <h6>Insurance Document</h6>
+                            <p class="text-muted small">Upload insurance copy</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="document-card">
+                            <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                            <h6>Pollution Certificate</h6>
+                            <p class="text-muted small">Upload PUC certificate</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% else %}
+            <!-- No Vehicle Assigned -->
+            <div class="content-card text-center py-5">
+                <i class="fas fa-truck fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No Vehicle Assigned</h4>
+                <p class="text-muted mb-4">
+                    You don't have a vehicle assigned yet. Please wait for the admin to assign you a vehicle.
+                </p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Once a vehicle is assigned, you'll be able to see all vehicle details and start accepting deliveries.
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Quick Actions -->
+        <div class="content-card">
+            <h5 class="text-primary mb-4"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <button class="btn btn-outline-primary w-100">
+                        <i class="fas fa-sync-alt me-2"></i> Update Location
+                    </button>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <button class="btn btn-outline-success w-100">
+                        <i class="fas fa-toggle-on me-2"></i> Go Online
+                    </button>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <button class="btn btn-outline-warning w-100">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Report Issue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

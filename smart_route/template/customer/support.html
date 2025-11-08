@@ -1,0 +1,176 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}Support - SmartRoute{% endblock %}
+{% block page_title %}Support Center{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Create New Ticket -->
+        <div class="table-card mb-4">
+            <div class="p-4 border-bottom">
+                <h5 class="mb-0">Create Support Ticket</h5>
+            </div>
+            <div class="p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Subject *</label>
+                            <input type="text" name="subject" class="form-control" 
+                                   placeholder="Brief description of your issue" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Priority</label>
+                            <select name="priority" class="form-select">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description *</label>
+                        <textarea name="description" class="form-control" rows="5" 
+                                  placeholder="Please provide detailed information about your issue" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Related Shipment (Optional)</label>
+                        <select name="related_shipment" class="form-select">
+                            <option value="">Select shipment</option>
+                            {% for shipment in request.user.customerprofile.shipment_set.all %}
+                            <option value="{{ shipment.id }}">{{ shipment.tracking_id }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            Submit Ticket
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="table-card">
+            <div class="p-4 border-bottom">
+                <h5 class="mb-0">Frequently Asked Questions</h5>
+            </div>
+            <div class="p-4">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                How can I track my shipment?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                You can track your shipment using the tracking ID provided after booking. 
+                                Go to "My Shipments" and click on the "Track" button for real-time updates.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                What payment methods do you accept?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                We accept UPI, Credit/Debit Cards, Net Banking, and Cash on Delivery 
+                                for certain services.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                How can I cancel a shipment?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Shipments can be cancelled from the "My Shipments" page if they are 
+                                still in "Pending" status. Contact support for assistance with 
+                                active shipments.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- My Tickets -->
+        <div class="table-card mb-4">
+            <div class="p-4 border-bottom">
+                <h5 class="mb-0">My Support Tickets</h5>
+            </div>
+            <div class="p-4">
+                {% if tickets %}
+                    {% for ticket in tickets %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ ticket.subject }}</h6>
+                            <p class="card-text text-muted small">{{ ticket.description|truncatewords:20 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge {% if ticket.priority == 'urgent' %}bg-danger
+                                    {% elif ticket.priority == 'high' %}bg-warning
+                                    {% elif ticket.priority == 'medium' %}bg-info
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ ticket.get_priority_display }}
+                                </span>
+                                <small class="text-muted">{{ ticket.created_at|date:"M d" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="fas fa-ticket-alt text-muted mb-2" style="font-size: 2rem;"></i>
+                    <p class="text-muted mb-0">No support tickets yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="table-card">
+            <div class="p-4 border-bottom">
+                <h5 class="mb-0">Contact Support</h5>
+            </div>
+            <div class="p-4">
+                <div class="mb-3">
+                    <i class="fas fa-phone text-primary me-2"></i>
+                    <strong>Phone:</strong>
+                    <span class="float-end">+91-9876543210</span>
+                </div>
+                <div class="mb-3">
+                    <i class="fas fa-envelope text-primary me-2"></i>
+                    <strong>Email:</strong>
+                    <span class="float-end">support@smartroute.com</span>
+                </div>
+                <div class="mb-3">
+                    <i class="fas fa-clock text-primary me-2"></i>
+                    <strong>Hours:</strong>
+                    <span class="float-end">24/7 Available</span>
+                </div>
+                <div class="mt-4">
+                    <button class="btn btn-outline-primary w-100 mb-2">
+                        <i class="fas fa-comment me-2"></i>Live Chat
+                    </button>
+                    <button class="btn btn-outline-success w-100">
+                        <i class="fas fa-phone me-2"></i>Call Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

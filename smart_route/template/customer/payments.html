@@ -1,0 +1,154 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}Payments - SmartRoute{% endblock %}
+{% block page_title %}Payments & Invoices{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1">Payment History</h4>
+        <p class="text-muted mb-0">View and manage your payments</p>
+    </div>
+    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#paymentModal">
+        <i class="fas fa-plus me-2"></i>Make Payment
+    </button>
+</div>
+
+<!-- Payment Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="stat-card text-center">
+            <i class="fas fa-money-bill-wave text-success mb-2" style="font-size: 2rem;"></i>
+            <div class="h4 mb-1">₹4,250</div>
+            <div class="text-muted">Total Paid</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card text-center">
+            <i class="fas fa-clock text-warning mb-2" style="font-size: 2rem;"></i>
+            <div class="h4 mb-1">₹1,200</div>
+            <div class="text-muted">Pending</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card text-center">
+            <i class="fas fa-receipt text-primary mb-2" style="font-size: 2rem;"></i>
+            <div class="h4 mb-1">12</div>
+            <div class="text-muted">Invoices</div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stat-card text-center">
+            <i class="fas fa-credit-card text-info mb-2" style="font-size: 2rem;"></i>
+            <div class="h4 mb-1">3</div>
+            <div class="text-muted">Payment Methods</div>
+        </div>
+    </div>
+</div>
+
+<!-- Payments Table -->
+<div class="table-card">
+    <div class="p-4">
+        {% if payments %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Payment ID</th>
+                        <th>Shipment</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td><strong>#PAY{{ payment.id|stringformat:"06d" }}</strong></td>
+                        <td>
+                            <small class="text-muted">{{ payment.shipment.tracking_id }}</small>
+                        </td>
+                        <td>₹{{ payment.amount }}</td>
+                        <td>
+                            <span class="badge bg-light text-dark">
+                                {{ payment.get_payment_method_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if payment.status == 'completed' %}bg-success
+                                {% elif payment.status == 'pending' %}bg-warning
+                                {% else %}bg-danger{% endif %}">
+                                {{ payment.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ payment.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" title="Download Invoice">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                {% if payment.status == 'pending' %}
+                                <button class="btn btn-outline-success" title="Pay Now">
+                                    <i class="fas fa-credit-card"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-receipt text-muted mb-3" style="font-size: 3rem;"></i>
+            <h5 class="text-muted">No payments yet</h5>
+            <p class="text-muted">Your payment history will appear here</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Make Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">Select Shipment</label>
+                        <select class="form-select">
+                            <option>Select shipment to pay</option>
+                            <option>SR20231215001 - ₹1,200 (Pending)</option>
+                            <option>SR20231214002 - ₹800 (Pending)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <select class="form-select">
+                            <option>UPI</option>
+                            <option>Credit Card</option>
+                            <option>Debit Card</option>
+                            <option>Net Banking</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Amount</label>
+                        <input type="text" class="form-control" value="₹1,200" readonly>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Proceed to Pay</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

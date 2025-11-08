@@ -1,0 +1,163 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}Test PDF Generation - SmartRoute{% endblock %}
+{% block page_title %}PDF Generation Test Page{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="table-card">
+            <div class="p-4">
+                <h4 class="mb-4">PDF Generation Test Center</h4>
+                
+                <!-- Quick Test Buttons -->
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-file-invoice fa-3x text-primary mb-3"></i>
+                                <h5>Test Invoice PDF</h5>
+                                <p class="text-muted">Generate a sample invoice PDF</p>
+                                <a href="{% url 'customer:test_pdf' %}" class="btn btn-primary">
+                                    <i class="fas fa-download me-2"></i>Test Invoice
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <i class="fas fa-receipt fa-3x text-success mb-3"></i>
+                                <h5>Test Receipt PDF</h5>
+                                <p class="text-muted">Generate a sample receipt PDF</p>
+                                <a href="{% url 'customer:test_receipt' %}" class="btn btn-success">
+                                    <i class="fas fa-download me-2"></i>Test Receipt
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Payments List -->
+                <h5 class="mb-3">Your Test Payments</h5>
+                {% if payments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Invoice No</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payments %}
+                            <tr>
+                                <td>
+                                    <strong>{{ payment.invoice_number }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ payment.shipment.tracking_id }}</small>
+                                </td>
+                                <td>₹{{ payment.total_amount }}</td>
+                                <td>
+                                    <span class="badge {% if payment.status == 'completed' %}bg-success{% else %}bg-warning{% endif %}">
+                                        {{ payment.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ payment.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'customer:download_invoice_pdf' payment.id %}" 
+                                           class="btn btn-outline-primary" title="Download Invoice">
+                                            <i class="fas fa-file-invoice"></i>
+                                        </a>
+                                        {% if payment.status == 'completed' %}
+                                        <a href="{% url 'customer:download_receipt_pdf' payment.id %}" 
+                                           class="btn btn-outline-success" title="Download Receipt">
+                                            <i class="fas fa-receipt"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No payments found</h5>
+                    <p class="text-muted">Use the test buttons above to create sample payments</p>
+                </div>
+                {% endif %}
+
+                <!-- Test Instructions -->
+                <div class="mt-4 p-3 bg-light rounded">
+                    <h6>Testing Instructions:</h6>
+                    <ol class="mb-0">
+                        <li>Click "Test Invoice" to generate a sample invoice PDF</li>
+                        <li>Click "Test Receipt" to generate a sample receipt PDF</li>
+                        <li>Check if PDF downloads automatically</li>
+                        <li>Verify the PDF content and formatting</li>
+                        <li>Use the action buttons to download specific invoices/receipts</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- System Information -->
+        <div class="table-card mb-4">
+            <div class="p-4 border-bottom">
+                <h5 class="mb-0">System Information</h5>
+            </div>
+            <div class="p-4">
+                <div class="mb-3">
+                    <strong>Django Version:</strong>
+                    <span class="float-end text-success">✅ Installed</span>
+                </div>
+                <div class="mb-3">
+                    <strong>ReportLab PDF:</strong>
+                    <span class="float-end text-success">✅ Installed</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Pillow (Images):</strong>
+                    <span class="float-end text-success">✅ Installed</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Customer Profile:</strong>
+                    <span class="float-end text-success">✅ Active</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Test Data:</strong>
+                    <span class="float-end text-success">✅ Ready</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="table-card">
+            <div class="p-4 border-bottom">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="p-4">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'customer:dashboard' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-tachometer-alt me-2"></i>Back to Dashboard
+                    </a>
+                    <a href="{% url 'customer:payments' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-credit-card me-2"></i>View All Payments
+                    </a>
+                    <button class="btn btn-outline-info" onclick="location.reload()">
+                        <i class="fas fa-sync-alt me-2"></i>Refresh Page
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

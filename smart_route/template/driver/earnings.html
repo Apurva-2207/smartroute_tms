@@ -1,0 +1,332 @@
+{% extends 'driver/base.html' %}
+{% load static %}
+
+{% block title %}Earnings - SmartRoute{% endblock %}
+
+{% block extra_css %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .earning-card {
+        text-align: center;
+        padding: 25px;
+        border-radius: 15px;
+        color: white;
+        margin-bottom: 20px;
+    }
+    
+    .earning-card i {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+    }
+    
+    .earning-card h3 {
+        font-size: 2.2rem;
+        margin-bottom: 5px;
+    }
+    
+    .bg-earning-primary { background: linear-gradient(135deg, #4361ee, #3a0ca3); }
+    .bg-earning-success { background: linear-gradient(135deg, #4cc9f0, #4895ef); }
+    .bg-earning-warning { background: linear-gradient(135deg, #f72585, #b5179e); }
+    
+    .earning-item {
+        border-left: 4px solid var(--primary);
+        padding: 15px;
+        margin-bottom: 15px;
+        background: #f8f9fa;
+        border-radius: 0 8px 8px 0;
+        transition: all 0.3s ease;
+    }
+    
+    .earning-item:hover {
+        transform: translateX(5px);
+    }
+    
+    .earning-item.paid {
+        border-left-color: #28a745;
+    }
+    
+    .earning-item.pending {
+        border-left-color: #ffc107;
+    }
+    
+    .status-badge-earning {
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .status-paid { background: #d4edda; color: #155724; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    
+    .filter-badge {
+        cursor: pointer;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .summary-item {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        border: 1px solid #dee2e6;
+    }
+    
+    .summary-item h5 {
+        color: var(--primary);
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4 class="text-primary"><i class="fas fa-route me-2"></i>SmartRoute</h4>
+            <p class="text-muted">Driver Portal</p>
+        </div>
+        
+        <div class="driver-info">
+            {% if driver.profile_image %}
+                <img src="{{ driver.profile_image.url }}" alt="Profile" class="profile-image">
+            {% else %}
+                <img src="https://via.placeholder.com/120/4361ee/ffffff?text=DR" alt="Profile" class="profile-image">
+            {% endif %}
+            <h5>{{ driver.user.first_name }} {{ driver.user.last_name }}</h5>
+            <p class="text-muted">@{{ driver.user.username }}</p>
+            <span class="status-badge status-{{ driver.status }}">{{ driver.status|title }}</span>
+        </div>
+        
+        <nav class="nav flex-column">
+            <a class="nav-link" href="{% url 'driver:dashboard' %}">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a class="nav-link" href="{% url 'driver:my_deliveries' %}">
+                <i class="fas fa-shipping-fast"></i> My Deliveries
+            </a>
+            <a class="nav-link" href="{% url 'driver:vehicle_info' %}">
+                <i class="fas fa-car"></i> Vehicle Info
+            </a>
+            <a class="nav-link active" href="{% url 'driver:earnings' %}">
+                <i class="fas fa-chart-line"></i> Earnings
+            </a>
+            <a class="nav-link" href="{% url 'driver:settings' %}">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+            <a class="nav-link" href="{% url 'driver:logout' %}">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Page Header -->
+        <div class="content-card">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h3 class="text-primary"><i class="fas fa-chart-line me-2"></i>Earnings & Payments</h3>
+                    <p class="text-muted">Track your earnings and payment history</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span class="badge bg-primary fs-6 p-2">
+                        Total Earnings: ₹{{ total_earnings }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Earnings Overview -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="earning-card bg-earning-primary">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <h3>₹{{ total_earnings }}</h3>
+                    <p>Total Earnings</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="earning-card bg-earning-success">
+                    <i class="fas fa-wallet"></i>
+                    <h3>₹{{ total_earnings }}</h3>
+                    <p>Paid Amount</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="earning-card bg-earning-warning">
+                    <i class="fas fa-clock"></i>
+                    <h3>₹{{ pending_earnings }}</h3>
+                    <p>Pending Payment</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Earnings Chart -->
+        <div class="content-card">
+            <h5 class="text-primary mb-4"><i class="fas fa-chart-bar me-2"></i>Monthly Earnings</h5>
+            <canvas id="earningsChart" height="100"></canvas>
+        </div>
+
+        <!-- Earnings Summary -->
+        <div class="content-card">
+            <h5 class="text-primary mb-4"><i class="fas fa-chart-pie me-2"></i>Earnings Summary</h5>
+            
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <h5>{{ earnings_list.count }}</h5>
+                    <p class="mb-0 text-muted">Total Deliveries</p>
+                </div>
+                <div class="summary-item">
+                    <h5>₹{{ total_earnings }}</h5>
+                    <p class="mb-0 text-muted">Total Earnings</p>
+                </div>
+                <div class="summary-item">
+                    <h5>₹{{ pending_earnings }}</h5>
+                    <p class="mb-0 text-muted">Pending Payment</p>
+                </div>
+                <div class="summary-item">
+                    <h5>
+                        {% if earnings_list.count > 0 %}
+                            ₹{{ total_earnings|floatformat:0 }}/{{ earnings_list.count }}
+                        {% else %}
+                            ₹0
+                        {% endif %}
+                    </h5>
+                    <p class="mb-0 text-muted">Average per Delivery</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Earnings History -->
+        <div class="content-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="text-primary mb-0"><i class="fas fa-history me-2"></i>Earnings History</h5>
+                <div>
+                    <a href="?status=all" class="btn btn-sm {% if request.GET.status == 'all' or not request.GET.status %}btn-primary{% else %}btn-outline-primary{% endif %} filter-badge">
+                        All
+                    </a>
+                    <a href="?status=paid" class="btn btn-sm {% if request.GET.status == 'paid' %}btn-primary{% else %}btn-outline-primary{% endif %} filter-badge">
+                        Paid
+                    </a>
+                    <a href="?status=pending" class="btn btn-sm {% if request.GET.status == 'pending' %}btn-primary{% else %}btn-outline-primary{% endif %} filter-badge">
+                        Pending
+                    </a>
+                </div>
+            </div>
+            
+            {% if earnings_list %}
+                {% for earning in earnings_list %}
+                <div class="earning-item {% if earning.is_paid %}paid{% else %}pending{% endif %}">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <h6 class="mb-1">Delivery #{{ earning.delivery.id }}</h6>
+                            <p class="mb-0 text-muted small">{{ earning.date|date:"M d, Y" }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-1"><strong>Customer:</strong> {{ earning.delivery.customer_name }}</p>
+                            <p class="mb-0 text-muted small">{{ earning.delivery.pickup_location }} → {{ earning.delivery.delivery_location }}</p>
+                        </div>
+                        <div class="col-md-2">
+                            <h5 class="text-success mb-0">₹{{ earning.amount }}</h5>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="status-badge-earning status-{% if earning.is_paid %}paid{% else %}pending{% endif %}">
+                                {% if earning.is_paid %}Paid{% else %}Pending{% endif %}
+                            </span>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <a href="{% url 'driver:delivery_detail' earning.delivery.id %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i> View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-money-bill-wave fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Earnings Yet</h4>
+                    <p class="text-muted">Your earnings will appear here once you complete deliveries.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Payment Information -->
+        <div class="content-card">
+            <h5 class="text-primary mb-4"><i class="fas fa-credit-card me-2"></i>Payment Information</h5>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <h6><i class="fas fa-university me-2"></i>Bank Details</h6>
+                        <p class="mb-2"><strong>Account Holder:</strong> {{ driver.user.first_name }} {{ driver.user.last_name }}</p>
+                        <p class="mb-2"><strong>Account Number:</strong> **** **** **** 1234</p>
+                        <p class="mb-0"><strong>IFSC Code:</strong> SBIN0000123</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item">
+                        <h6><i class="fas fa-calendar me-2"></i>Payment Schedule</h6>
+                        <p class="mb-2"><strong>Payment Cycle:</strong> Weekly</p>
+                        <p class="mb-2"><strong>Next Payout:</strong> Monday</p>
+                        <p class="mb-0"><strong>Last Payment:</strong> {% now "M d, Y" %}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3">
+                <button class="btn btn-outline-primary">
+                    <i class="fas fa-edit me-2"></i> Update Bank Details
+                </button>
+                <button class="btn btn-outline-success">
+                    <i class="fas fa-download me-2"></i> Download Statement
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Earnings Chart
+    const ctx = document.getElementById('earningsChart').getContext('2d');
+    const earningsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'Monthly Earnings (₹)',
+                data: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 32000, 35000, 40000, 38000, 42000],
+                backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                borderColor: 'rgba(67, 97, 238, 1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

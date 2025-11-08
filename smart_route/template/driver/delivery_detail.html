@@ -1,0 +1,256 @@
+{% extends 'driver/base.html' %}
+{% load static %}
+
+{% block title %}Delivery #{{ delivery.id }} - SmartRoute{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delivery-header {
+        background: linear-gradient(135deg, #4361ee, #3a0ca3);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .info-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-left: 4px solid var(--primary);
+    }
+    
+    .status-timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .status-timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -23px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #6c757d;
+        border: 2px solid white;
+    }
+    
+    .timeline-item.active::before {
+        background: var(--primary);
+    }
+    
+    .timeline-item.completed::before {
+        background: #28a745;
+    }
+    
+    .action-buttons .btn {
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4 class="text-primary"><i class="fas fa-route me-2"></i>SmartRoute</h4>
+            <p class="text-muted">Driver Portal</p>
+        </div>
+        
+        <div class="driver-info">
+            {% if driver.profile_image %}
+                <img src="{{ driver.profile_image.url }}" alt="Profile" class="profile-image">
+            {% else %}
+                <img src="https://via.placeholder.com/120/4361ee/ffffff?text=DR" alt="Profile" class="profile-image">
+            {% endif %}
+            <h5>{{ driver.user.first_name }} {{ driver.user.last_name }}</h5>
+            <p class="text-muted">@{{ driver.user.username }}</p>
+            <span class="status-badge status-{{ driver.status }}">{{ driver.status|title }}</span>
+        </div>
+        
+        <nav class="nav flex-column">
+            <a class="nav-link" href="{% url 'driver:dashboard' %}">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a class="nav-link" href="{% url 'driver:my_deliveries' %}">
+                <i class="fas fa-shipping-fast"></i> My Deliveries
+            </a>
+            <a class="nav-link" href="{% url 'driver:vehicle_info' %}">
+                <i class="fas fa-car"></i> Vehicle Info
+            </a>
+            <a class="nav-link" href="{% url 'driver:earnings' %}">
+                <i class="fas fa-chart-line"></i> Earnings
+            </a>
+            <a class="nav-link" href="{% url 'driver:settings' %}">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+            <a class="nav-link" href="{% url 'driver:logout' %}">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Delivery Header -->
+        <div class="delivery-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="mb-2">Delivery #{{ delivery.id }}</h2>
+                    <p class="mb-0">Customer: {{ delivery.customer_name }}</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span class="badge bg-light text-dark fs-6 p-2">
+                        Status: {{ delivery.status|title }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="content-card">
+            <div class="action-buttons text-center">
+                {% if delivery.status == 'assigned' %}
+                    <a href="{% url 'driver:update_delivery_status' delivery.id 'picked_up' %}" 
+                       class="btn btn-success btn-lg">
+                        <i class="fas fa-box-open me-2"></i> Mark as Picked Up
+                    </a>
+                {% elif delivery.status == 'picked_up' %}
+                    <a href="{% url 'driver:update_delivery_status' delivery.id 'in_transit' %}" 
+                       class="btn btn-info btn-lg">
+                        <i class="fas fa-truck me-2"></i> Start Transit
+                    </a>
+                {% elif delivery.status == 'in_transit' %}
+                    <a href="{% url 'driver:update_delivery_status' delivery.id 'delivered' %}" 
+                       class="btn btn-success btn-lg">
+                        <i class="fas fa-check me-2"></i> Mark as Delivered
+                    </a>
+                {% endif %}
+                
+                <a href="{% url 'driver:my_deliveries' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Deliveries
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Delivery Information -->
+            <div class="col-md-6">
+                <div class="content-card">
+                    <h5 class="text-primary mb-4"><i class="fas fa-info-circle me-2"></i>Delivery Information</h5>
+                    
+                    <div class="info-card">
+                        <h6>Customer Details</h6>
+                        <p class="mb-1"><strong>Name:</strong> {{ delivery.customer_name }}</p>
+                        <p class="mb-0"><strong>Phone:</strong> {{ delivery.customer_phone }}</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h6>Package Details</h6>
+                        <p class="mb-1"><strong>Description:</strong> {{ delivery.package_description }}</p>
+                        <p class="mb-1"><strong>Weight:</strong> {{ delivery.package_weight }} kg</p>
+                        <p class="mb-0"><strong>Estimated Fare:</strong> ₹{{ delivery.estimated_fare }}</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h6>Location Details</h6>
+                        <div class="mb-3">
+                            <i class="fas fa-map-marker-alt text-success me-2"></i>
+                            <strong>Pickup Location:</strong><br>
+                            <span class="ms-4">{{ delivery.pickup_location }}</span>
+                        </div>
+                        <div>
+                            <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                            <strong>Delivery Location:</strong><br>
+                            <span class="ms-4">{{ delivery.delivery_location }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Timeline -->
+            <div class="col-md-6">
+                <div class="content-card">
+                    <h5 class="text-primary mb-4"><i class="fas fa-history me-2"></i>Delivery Timeline</h5>
+                    
+                    <div class="status-timeline">
+                        <div class="timeline-item {% if delivery.status != 'pending' %}completed{% endif %}">
+                            <h6>Order Created</h6>
+                            <p class="text-muted mb-0">{{ delivery.assigned_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                        
+                        <div class="timeline-item {% if delivery.status == 'assigned' %}active{% elif delivery.status in 'picked_up,in_transit,delivered' %}completed{% endif %}">
+                            <h6>Assigned to Driver</h6>
+                            <p class="text-muted mb-0">{{ delivery.assigned_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                        
+                        <div class="timeline-item {% if delivery.status == 'picked_up' %}active{% elif delivery.status in 'in_transit,delivered' %}completed{% endif %}">
+                            <h6>Picked Up</h6>
+                            {% if delivery.picked_up_at %}
+                                <p class="text-muted mb-0">{{ delivery.picked_up_at|date:"M d, Y H:i" }}</p>
+                            {% else %}
+                                <p class="text-muted mb-0">Pending</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="timeline-item {% if delivery.status == 'in_transit' %}active{% elif delivery.status == 'delivered' %}completed{% endif %}">
+                            <h6>In Transit</h6>
+                            {% if delivery.status in 'in_transit,delivered' %}
+                                <p class="text-muted mb-0">Started: {{ delivery.picked_up_at|date:"M d, Y H:i" }}</p>
+                            {% else %}
+                                <p class="text-muted mb-0">Pending</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="timeline-item {% if delivery.status == 'delivered' %}active completed{% endif %}">
+                            <h6>Delivered</h6>
+                            {% if delivery.delivered_at %}
+                                <p class="text-muted mb-0">{{ delivery.delivered_at|date:"M d, Y H:i" }}</p>
+                            {% else %}
+                                <p class="text-muted mb-0">Pending</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="content-card">
+                    <h5 class="text-primary mb-4"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-phone me-2"></i> Call Customer
+                        </button>
+                        <button class="btn btn-outline-info">
+                            <i class="fas fa-map me-2"></i> Get Directions
+                        </button>
+                        <button class="btn btn-outline-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i> Report Issue
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

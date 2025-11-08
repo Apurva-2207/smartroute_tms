@@ -1,0 +1,159 @@
+{% extends 'customer/base.html' %}
+
+{% block title %}Track Shipment - SmartRoute{% endblock %}
+{% block page_title %}Track Shipment{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Tracking Map -->
+        <div class="table-card mb-4">
+            <div class="p-4 border-bottom">
+                <h5 class="mb-0">Live Tracking</h5>
+            </div>
+            <div class="p-4">
+                <div class="bg-light rounded text-center py-5 mb-4">
+                    <i class="fas fa-map-marked-alt text-primary mb-3" style="font-size: 3rem;"></i>
+                    <h5>Live Tracking Map</h5>
+                    <p class="text-muted">Real-time vehicle location tracking</p>
+                    <small class="text-muted">(Map integration coming soon)</small>
+                </div>
+                
+                <!-- Tracking Progress -->
+                <div class="tracking-progress">
+                    <h6 class="mb-3">Delivery Progress</h6>
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar 
+                            {% if shipment.status == 'pending' %}bg-warning w-25
+                            {% elif shipment.status == 'confirmed' %}bg-info w-50
+                            {% elif shipment.status == 'in_transit' %}bg-primary w-75
+                            {% else %}bg-success w-100{% endif %}" 
+                            role="progressbar">
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between text-sm">
+                        <span>Order Placed</span>
+                        <span>Confirmed</span>
+                        <span>In Transit</span>
+                        <span>Delivered</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tracking History -->
+        <div class="table-card">
+            <div class="p-4 border-bottom">
+                <h5 class="mb-0">Tracking History</h5>
+            </div>
+            <div class="p-4">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-success"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-1">Shipment Delivered</h6>
+                            <p class="text-muted mb-1">Delivered to recipient</p>
+                            <small class="text-muted">Today, 2:30 PM</small>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-primary"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-1">Out for Delivery</h6>
+                            <p class="text-muted mb-1">Vehicle is in your area</p>
+                            <small class="text-muted">Today, 10:15 AM</small>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-info"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-1">In Transit</h6>
+                            <p class="text-muted mb-1">Shipment is on the way</p>
+                            <small class="text-muted">Yesterday, 3:45 PM</small>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-warning"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-1">Order Confirmed</h6>
+                            <p class="text-muted mb-1">Shipment confirmed by transporter</p>
+                            <small class="text-muted">{{ shipment.created_at|date:"M d, Y" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Shipment Details -->
+        <div class="table-card mb-4">
+            <div class="p-4 border-bottom">
+                <h5 class="mb-0">Shipment Details</h5>
+            </div>
+            <div class="p-4">
+                <div class="mb-3">
+                    <strong>Tracking ID:</strong>
+                    <span class="float-end">{{ shipment.tracking_id }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Status:</strong>
+                    <span class="float-end status-badge status-{{ shipment.status }}">
+                        {{ shipment.get_status_display }}
+                    </span>
+                </div>
+                <div class="mb-3">
+                    <strong>Goods Type:</strong>
+                    <span class="float-end">{{ shipment.goods_type }}</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Weight:</strong>
+                    <span class="float-end">{{ shipment.weight }} kg</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Estimated Delivery:</strong>
+                    <span class="float-end">{{ shipment.estimated_delivery|date:"M d, Y" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Address Information -->
+        <div class="table-card">
+            <div class="p-4 border-bottom">
+                <h5 class="mb-0">Address Information</h5>
+            </div>
+            <div class="p-4">
+                <h6 class="text-primary">Pickup Address</h6>
+                <p class="text-muted mb-3">{{ shipment.pickup_address }}</p>
+                
+                <h6 class="text-success">Delivery Address</h6>
+                <p class="text-muted">{{ shipment.delivery_address }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 25px;
+}
+.timeline-marker {
+    position: absolute;
+    left: -30px;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+.timeline-content {
+    padding-bottom: 10px;
+    border-left: 2px solid #e2e8f0;
+    padding-left: 20px;
+}
+</style>
+{% endblock %}

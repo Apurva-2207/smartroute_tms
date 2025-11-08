@@ -16,15 +16,84 @@
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* 3D Background Elements */
+        .bg-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation: float 20s infinite linear;
+        }
+        
+        .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 70%;
+            left: 80%;
+            animation: float 25s infinite linear reverse;
+        }
+        
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 30%;
+            left: 85%;
+            animation: float 15s infinite linear;
+        }
+        
+        .shape:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 80%;
+            left: 15%;
+            animation: float 30s infinite linear reverse;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            100% {
+                transform: translate(100px, 100px) rotate(360deg);
+            }
         }
         
         .registration-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
             padding: 40px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             margin: 50px auto;
             max-width: 700px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 1;
         }
         
         .vehicle-option {
@@ -53,14 +122,50 @@
             border-radius: 10px;
             font-size: 0.8rem;
         }
+        
+        .form-control:focus {
+            border-color: #4361ee;
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        }
+        
+        .vehicle-section {
+            display: none;
+        }
+        
+        .option-card {
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .option-card:hover {
+            border-color: #4361ee;
+            background-color: #f8f9fa;
+        }
+        
+        .option-card.selected {
+            border-color: #4361ee;
+            background-color: #e7f1ff;
+        }
     </style>
 </head>
 <body>
+    <!-- 3D Background Shapes -->
+    <div class="bg-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+    
     <div class="container">
         <div class="registration-card">
             <div class="text-center mb-4">
                 <h2 class="text-primary"><i class="fas fa-id-card me-2"></i>Driver Registration</h2>
-                <p class="text-muted">Join as a delivery driver with your vehicle</p>
+                <p class="text-muted">Join as a delivery driver with SmartRoute</p>
             </div>
 
             {% if messages %}
@@ -72,7 +177,7 @@
                 {% endfor %}
             {% endif %}
 
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 
                 <!-- Personal Information -->
@@ -110,73 +215,133 @@
                     </div>
                 </div>
 
-                <!-- Vehicle Information -->
-                <h5 class="text-primary mb-3 mt-4"><i class="fas fa-truck me-2"></i>Vehicle Information</h5>
-                
-                <div class="mb-3">
-                    <label class="form-label">Select Your Vehicle Type *</label>
-                    <div class="vehicle-options">
-                        <div class="vehicle-option" onclick="selectVehicle('mini')">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="vehicle_type" value="mini" id="mini" required>
-                                <label class="form-check-label w-100" for="mini">
-                                    <strong>🚗 Mini Vehicle</strong>
-                                    <span class="capacity-badge float-end">30-300 kg</span>
-                                    <p class="text-muted mb-0 mt-1">Small deliveries, local transport</p>
-                                </label>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Address</label>
+                        <textarea class="form-control" name="address" rows="2" placeholder="Enter your full address"></textarea>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <label class="form-label">City</label>
+                                <input type="text" class="form-control" name="city" placeholder="Enter your city">
                             </div>
-                        </div>
-                        
-                        <div class="vehicle-option" onclick="selectVehicle('lcv')">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="vehicle_type" value="lcv" id="lcv">
-                                <label class="form-check-label w-100" for="lcv">
-                                    <strong>🚐 LCV (Light Commercial Vehicle)</strong>
-                                    <span class="capacity-badge float-end">300-1000 kg</span>
-                                    <p class="text-muted mb-0 mt-1">Medium loads, city deliveries</p>
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="vehicle-option" onclick="selectVehicle('mcv')">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="vehicle_type" value="mcv" id="mcv">
-                                <label class="form-check-label w-100" for="mcv">
-                                    <strong>🚛 MCV (Medium Commercial Vehicle)</strong>
-                                    <span class="capacity-badge float-end">1000-5000 kg</span>
-                                    <p class="text-muted mb-0 mt-1">Heavy loads, intercity transport</p>
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="vehicle-option" onclick="selectVehicle('hcv')">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="vehicle_type" value="hcv" id="hcv">
-                                <label class="form-check-label w-100" for="hcv">
-                                    <strong>🚚 HCV (Heavy Commercial Vehicle)</strong>
-                                    <span class="capacity-badge float-end">5000-16000 kg</span>
-                                    <p class="text-muted mb-0 mt-1">Large shipments, long distance</p>
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="vehicle-option" onclick="selectVehicle('trailer')">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="vehicle_type" value="trailer" id="trailer">
-                                <label class="form-check-label w-100" for="trailer">
-                                    <strong>🚛 Trailer</strong>
-                                    <span class="capacity-badge float-end">16000-35000 kg</span>
-                                    <p class="text-muted mb-0 mt-1">Maximum capacity, industrial transport</p>
-                                </label>
+                            <div class="col-12">
+                                <label class="form-label">Pincode</label>
+                                <input type="text" class="form-control" name="pincode" placeholder="Enter pincode">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-12 mb-3">
-                        <label class="form-label">Vehicle Registration Number *</label>
-                        <input type="text" class="form-control" name="vehicle_number" placeholder="e.g., DL01AB1234" required>
+                <div class="mb-3">
+                    <label class="form-label">State</label>
+                    <input type="text" class="form-control" name="state" placeholder="Enter your state">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Profile Image</label>
+                    <input type="file" class="form-control" name="profile_image" accept="image/*">
+                </div>
+
+                <!-- Vehicle Ownership -->
+                <h5 class="text-primary mb-3 mt-4"><i class="fas fa-car me-2"></i>Vehicle Information</h5>
+                
+                <div class="mb-4">
+                    <label class="form-label mb-3">Do you have your own vehicle? *</label>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="option-card" onclick="selectVehicleOption('yes')">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="has_own_vehicle" value="yes" id="has_vehicle" required>
+                                    <label class="form-check-label w-100" for="has_vehicle">
+                                        <strong><i class="fas fa-car text-success me-2"></i>Yes, I have my own vehicle</strong>
+                                        <p class="text-muted mb-0 mt-1">You'll use your personal vehicle for deliveries</p>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="option-card" onclick="selectVehicleOption('no')">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="has_own_vehicle" value="no" id="no_vehicle">
+                                    <label class="form-check-label w-100" for="no_vehicle">
+                                        <strong><i class="fas fa-truck-loading text-warning me-2"></i>No, I need a vehicle</strong>
+                                        <p class="text-muted mb-0 mt-1">We'll assign you a company vehicle</p>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vehicle Details Section (shown only if driver has own vehicle) -->
+                <div id="vehicleDetailsSection" class="vehicle-section">
+                    <div class="mb-3">
+                        <label class="form-label">Select Your Vehicle Type *</label>
+                        <div class="vehicle-options">
+                            <div class="vehicle-option" onclick="selectVehicle('mini')">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="vehicle_type" value="mini" id="mini">
+                                    <label class="form-check-label w-100" for="mini">
+                                        <strong>🚗 Mini Vehicle</strong>
+                                        <span class="capacity-badge float-end">30-300 kg</span>
+                                        <p class="text-muted mb-0 mt-1">Small deliveries, local transport</p>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="vehicle-option" onclick="selectVehicle('lcv')">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="vehicle_type" value="lcv" id="lcv">
+                                    <label class="form-check-label w-100" for="lcv">
+                                        <strong>🚐 LCV (Light Commercial Vehicle)</strong>
+                                        <span class="capacity-badge float-end">300-1000 kg</span>
+                                        <p class="text-muted mb-0 mt-1">Medium loads, city deliveries</p>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="vehicle-option" onclick="selectVehicle('mcv')">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="vehicle_type" value="mcv" id="mcv">
+                                    <label class="form-check-label w-100" for="mcv">
+                                        <strong>🚛 MCV (Medium Commercial Vehicle)</strong>
+                                        <span class="capacity-badge float-end">1000-5000 kg</span>
+                                        <p class="text-muted mb-0 mt-1">Heavy loads, intercity transport</p>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="vehicle-option" onclick="selectVehicle('hcv')">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="vehicle_type" value="hcv" id="hcv">
+                                    <label class="form-check-label w-100" for="hcv">
+                                        <strong>🚚 HCV (Heavy Commercial Vehicle)</strong>
+                                        <span class="capacity-badge float-end">5000-16000 kg</span>
+                                        <p class="text-muted mb-0 mt-1">Large shipments, long distance</p>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="vehicle-option" onclick="selectVehicle('trailer')">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="vehicle_type" value="trailer" id="trailer">
+                                    <label class="form-check-label w-100" for="trailer">
+                                        <strong>🚛 Trailer</strong>
+                                        <span class="capacity-badge float-end">16000-35000 kg</span>
+                                        <p class="text-muted mb-0 mt-1">Maximum capacity, industrial transport</p>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Vehicle Registration Number *</label>
+                            <input type="text" class="form-control" name="vehicle_number" placeholder="e.g., DL01AB1234" id="vehicleNumber">
+                        </div>
                     </div>
                 </div>
 
@@ -195,8 +360,8 @@
 
                 <div class="mb-3">
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" required>
-                        <label class="form-check-label">
+                        <input class="form-check-input" type="checkbox" required id="termsCheck">
+                        <label class="form-check-label" for="termsCheck">
                             I agree to the Terms and Conditions and confirm that I have a valid driving license
                         </label>
                     </div>
@@ -214,6 +379,35 @@
     </div>
 
     <script>
+        function selectVehicleOption(option) {
+            // Remove selected class from all options
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            event.currentTarget.classList.add('selected');
+            
+            // Show/hide vehicle details section
+            const vehicleSection = document.getElementById('vehicleDetailsSection');
+            const vehicleNumber = document.getElementById('vehicleNumber');
+            
+            if (option === 'yes') {
+                vehicleSection.style.display = 'block';
+                vehicleNumber.required = true;
+            } else {
+                vehicleSection.style.display = 'none';
+                vehicleNumber.required = false;
+                // Clear vehicle selection
+                document.querySelectorAll('input[name="vehicle_type"]').forEach(radio => {
+                    radio.checked = false;
+                });
+                document.querySelectorAll('.vehicle-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+            }
+        }
+        
         function selectVehicle(vehicleType) {
             // Remove selected class from all options
             document.querySelectorAll('.vehicle-option').forEach(option => {
@@ -226,6 +420,41 @@
             // Check the radio button
             document.getElementById(vehicleType).checked = true;
         }
+        
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const hasVehicle = document.querySelector('input[name="has_own_vehicle"]:checked');
+            const termsChecked = document.getElementById('termsCheck').checked;
+            
+            if (!hasVehicle) {
+                e.preventDefault();
+                alert('Please select whether you have a vehicle or not');
+                return;
+            }
+            
+            if (hasVehicle.value === 'yes') {
+                const vehicleType = document.querySelector('input[name="vehicle_type"]:checked');
+                const vehicleNumber = document.getElementById('vehicleNumber').value;
+                
+                if (!vehicleType) {
+                    e.preventDefault();
+                    alert('Please select your vehicle type');
+                    return;
+                }
+                
+                if (!vehicleNumber.trim()) {
+                    e.preventDefault();
+                    alert('Please enter your vehicle registration number');
+                    return;
+                }
+            }
+            
+            if (!termsChecked) {
+                e.preventDefault();
+                alert('Please agree to the Terms and Conditions');
+                return;
+            }
+        });
     </script>
 
     <!-- Bootstrap JS -->

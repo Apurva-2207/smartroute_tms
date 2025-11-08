@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Transport Express</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+            background: #bfd0ee;
+        }
+
+        #video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            opacity: 0.4;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(39, 31, 69, 0.1);
+            z-index: -1;
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            color: #4A6CF7;
+        }
+
+        .login-container {
+            width: 420px;
+            padding: 35px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform-style: preserve-3d;
+            transition: transform 0.8s ease;
+            z-index: 1;
+            color: #333;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h2 {
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-control {
+            height: 50px;
+            border-radius: 10px;
+            padding-left: 45px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #4A6CF7;
+            box-shadow: 0 0 0 0.2rem rgba(74, 108, 247, 0.15);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            color: #7f8c8d;
+        }
+
+        .btn-login {
+            background: #4A6CF7;
+            border: none;
+            color: white;
+            height: 50px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-login:hover {
+            background: #3a5ce5;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 108, 247, 0.3);
+        }
+
+        .additional-options {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            color: #555;
+        }
+
+        .forgot-password {
+            color: #4A6CF7;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-password:hover {
+            color: #3a5ce5;
+            text-decoration: underline;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .signup-link a {
+            color: #4A6CF7;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .signup-link a:hover {
+            color: #3a5ce5;
+            text-decoration: underline;
+        }
+
+        .transport-icons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .transport-icon {
+            font-size: 24px;
+            color: #4A6CF7;
+            animation: bounce 3s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .transport-icon:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .transport-icon:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        .transport-icon:nth-child(4) {
+            animation-delay: 0.9s;
+        }
+
+        .social-login {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f7ff;
+            color: #4A6CF7;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .social-btn:hover {
+            background: #4A6CF7;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 576px) {
+            .login-container {
+                width: 90%;
+                padding: 25px;
+            }
+            
+            .logo {
+                left: 20px;
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Video Background -->
+    <video autoplay muted loop id="video-background">
+        <source src="./video.mp4" type="video/mp4">
+    </video>
+    
+    <!-- Overlay -->
+    <div class="overlay"></div>
+    
+    <!-- Logo -->
+    <div class="logo">
+        <i class="fas fa-shipping-fast"></i>
+        Transport Express
+    </div>
+    
+    <!-- Login Container -->
+    <div class="login-container" id="login-container">
+        <div class="login-header">
+            <h2>Welcome Back</h2>
+            <p>Sign in to access your transport dashboard</p>
+        </div>
+        
+        <div class="transport-icons">
+            <i class="fas fa-truck transport-icon"></i>
+            <i class="fas fa-ship transport-icon"></i>
+            <i class="fas fa-plane transport-icon"></i>
+            <i class="fas fa-train transport-icon"></i>
+        </div>
+        
+        <form id="login-form">
+            <div class="form-group">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" class="form-control" id="username" placeholder="Username or Email" required>
+            </div>
+            
+            <div class="form-group">
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" class="form-control" id="password" placeholder="Password" required>
+            </div>
+            
+            <div class="additional-options">
+                <div class="remember-me">
+                    <input type="checkbox" id="remember">
+                    <label for="remember" style="margin-left: 5px;">Remember me</label>
+                </div>
+                <a href="#" class="forgot-password">Forgot Password?</a>
+            </div>
+            
+            <button type="submit" class="btn btn-login">Login</button>
+            
+            <div class="social-login">
+                <a href="#" class="social-btn">
+                    <i class="fab fa-google"></i>
+                </a>
+                <a href="#" class="social-btn">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="#" class="social-btn">
+                    <i class="fab fa-twitter"></i>
+                </a>
+            </div>
+            
+            <div class="signup-link">
+                Don't have an account? <a href="#">Sign up now</a>
+            </div>
+        </form>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 3D effect on mouse move - slowed down
+        const loginContainer = document.getElementById('login-container');
+        document.addEventListener('mousemove', (e) => {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 40;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 40;
+            loginContainer.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+        
+        // Reset transform when mouse leaves
+        document.addEventListener('mouseleave', () => {
+            loginContainer.style.transform = 'rotateY(0deg) rotateX(0deg)';
+        });
+        
+        // Form submission
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple validation
+            if (username && password) {
+                // In a real application, you would send this data to a server
+                const loginBtn = document.querySelector('.btn-login');
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+                loginBtn.disabled = true;
+                
+                setTimeout(() => {
+                    alert(`Login successful! Welcome, ${username}`);
+                    // Reset form
+                    this.reset();
+                    loginBtn.innerHTML = 'Login';
+                    loginBtn.disabled = false;
+                }, 1500);
+            } else {
+                alert('Please fill in all fields');
+            }
+        });
+        
+        // Add video fallback if video doesn't load
+        const video = document.getElementById('video-background');
+        video.addEventListener('error', function() {
+            // Set a fallback background if video fails to load
+            document.body.style.background = 'linear-gradient(135deg, #0f1a2f, #1e3a5f)';
+            document.getElementById('video-background').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
